@@ -11,6 +11,78 @@ import * as walk from 'acorn-walk';
 import * as sourceMap from 'source-map';
 import * as tsEstree from '@typescript-eslint/typescript-estree';
 import { base as tsBase } from './ts-base';
+import ErrorStackParser from 'error-stack-parser';
+
+export interface StackFrame {
+  getFileName: () => string | null;
+  getLineNumber: () => number | null;
+  getColumnNumber: () => number | null;
+};
+
+export interface FullStackTrace {
+  error: Error;
+  stack: string;
+  structuredStack: StackFrame[];
+  parsedStack: {
+    functionName?: string | null;
+    fileName: string | null;
+    scriptNameOrSourceURL?: string | null;
+    lineNumber: number | null;
+    enclosingLineNumber?: number | null;
+    columnNumber: number | null;
+    enclosingColumnNumber?: number | null;
+  }[];
+};
+
+/**
+ * Modified implementation of `Error.prepareStackTrace` with simple
+ * concatenation of stack frames.
+ * Adapted from Source: https://github.com/nodejs/node/blob/main/lib/internal/errors.js
+ * Read more about `Error.prepareStackTrace` at https://v8.dev/docs/stack-trace-api#customizing-stack-traces.
+ */
+function defaultPrepareStackTrace(error, trace) {
+  const kIsNodeError = Symbol('kIsNodeError');
+
+  // Normal error formatting:
+  //
+  // Error: Message
+  //     at function (file)
+  //     at file
+  let errorString;
+  if (kIsNodeError in error) {
+    errorString = `${error.name} [${error.code}]: ${error.message}`;
+  } else {
+    errorString = error.toString();
+  }
+  if (trace.length === 0) {
+    return errorString;
+  }
+  return `${errorString}\n    at ${trace.join('\n    at ')}`;
+}
+
+// Run at the beginning of application to initialize the error handling
+// Only initialize in development environment
+export const initializeCatchToLLM = () => {
+  // Override the default Error.prepareStackTrace to return FullStackTrace
+  Error.prepareStackTrace = (error, structuredStack): FullStackTrace => {
+    const stack = defaultPrepareStackTrace(error, structuredStack);
+
+    return {
+      error,
+      stack,
+      structuredStack: structuredStack as StackFrame[],
+      parsedStack: structuredStack.map((frame) => ({
+        functionName: frame.getFunctionName(),
+        fileName: frame.getFileName(),
+        scriptNameOrSourceURL: frame.getScriptNameOrSourceURL(),
+        lineNumber: frame.getLineNumber(),
+        enclosingLineNumber: frame.getEnclosingLineNumber(),
+        columnNumber: frame.getColumnNumber(),
+        enclosingColumnNumber: frame.getEnclosingColumnNumber(),
+      })),
+    };
+  };
+}
 
 /**
  * @interface CodeContext
@@ -88,6 +160,11 @@ interface CodeContext {
   originalErrorSection?: string;
   /** The error message from the runtime error. Only populated for the stack entry that represents the origin of the error. */
   errorMessage?: string;
+  /**
+   * The error message from the first line of the runtime error stack which may differ from the `message` field.
+   * Only populated for the stack entry that represents the origin of the error.
+   */
+  errorMessageStack?: string;
   /** HTTP status code associated with the error (if available). */
   errorFields?: any;
 }
@@ -127,48 +204,55 @@ interface CodeContext {
 export async function contextualizeError(runtimeError: Error, options?: { outputFile?: string }): Promise<void> {
   const outputFile = options?.outputFile || 'error-context.json';
   const referencedScripts: CodeContext[] = [];
-  const oldPrepareStackTrace = Error.prepareStackTrace;
 
-  type StackFrame = {
-    getFileName: () => string | null;
-    getLineNumber: () => number | null;
-    getColumnNumber: () => number | null;
-  };
+  const snapshotError = new Error();
+  Error.captureStackTrace(snapshotError);
 
-  Error.prepareStackTrace = (err, structuredStack) => {
-    return structuredStack;
-  };
-
-  const error = new Error();
-  Error.captureStackTrace(error);
-
-  const errStack = error.stack as unknown as StackFrame[];
-
-  Error.prepareStackTrace = oldPrepareStackTrace;
-
-  // Validate stack trace
-  if (!errStack) {
-    console.warn('Stack trace is undefined. Cannot proceed.');
+  // Check if snapshotError contains the attribute "stack.parsedStack"
+  // If it does, the library has been initialized
+  // If it does not, exit
+  if (!snapshotError.stack || !(snapshotError.stack as any).parsedStack) {
+    console.warn('contextualizeError was called before the library was initialized.');
+    console.warn('Please ensure that the library is initialized before calling this function.');
+    console.warn('Note: catch-to-llm should only be initialized in development environments.');
     return;
+  }
+  
+  const snapshotStackTrace = snapshotError.stack as unknown as FullStackTrace;
+  const runtimeStackTrace = runtimeError.stack as unknown as FullStackTrace;
+  
+  // Log to console the output of each frame of the snapshotError.stack calling the getFileName methods on each frame
+  console.log(snapshotStackTrace.structuredStack.map((frame) => frame.getFileName()));
+
+  // Error.prepareStackTrace = oldPrepareStackTrace;
+
+  // Parse the error stack trace provided by the runtime error
+  // const parsedRuntimeErrorStack = ErrorStackParser.parse(runtimeError);
+  // console.log(parsedRuntimeErrorStack);
+
+  let stackTraceOfRecord = runtimeStackTrace;
+  // Validate stack trace
+  if (!runtimeStackTrace.structuredStack) {
+    stackTraceOfRecord = snapshotStackTrace;
   }
 
   // Filter stack frames to remove extraneous entries
-  let foundNodeModulesFrame = false;
-  const stackFrames = errStack.filter((frame, index) => {
+  let foundTopNodeModulesFrame = false;
+  const stackFrames = stackTraceOfRecord.parsedStack.filter((frame, index) => {
     if (index === 0) {
       // Skip the first frame as it's always this function call
       return false;
     }
 
-    const fileName = frame.getFileName();
+    const fileName = frame.fileName;
     console.log(fileName);
-    if (fileName && fileName.includes('node_modules')) {
-      if (!foundNodeModulesFrame) {
-        // Keep the first node_modules frame for context
-        foundNodeModulesFrame = true;
+    if (fileName && (fileName.includes('node:') || fileName.includes('node_modules') || !fileName.startsWith('/'))) {
+      if (!foundTopNodeModulesFrame) {
+        // Keep the first external frame for context
+        foundTopNodeModulesFrame = true;
         return true;
       }
-      // Filter out subsequent node_modules frames
+      // Filter out subsequent external frames
       return false;
     }
     // Keep all other frames
@@ -178,12 +262,9 @@ export async function contextualizeError(runtimeError: Error, options?: { output
   // Asynchronously process each frame to allow for potential delays in source map loading
   await Promise.all(
     stackFrames.map(async (stackFrame, stackIndex) => {
-      const generatedFileName = stackFrame.getFileName();
-      const generatedLineNumber = stackFrame.getLineNumber();
-      const generatedColumnNumber = stackFrame.getColumnNumber();
 
       // Validate frame data
-      if (!generatedFileName || generatedLineNumber === null || generatedColumnNumber === null) {
+      if (!stackFrame.fileName || stackFrame.lineNumber === null || stackFrame.columnNumber === null) {
         console.warn(`Incomplete stack frame data at index ${stackIndex}. Skipping...`);
         return;
       }
@@ -192,10 +273,10 @@ export async function contextualizeError(runtimeError: Error, options?: { output
         // Initialize context object for the current frame
         const context: CodeContext = {
           stackIndex,
-          generatedFileName,
+          generatedFileName: stackFrame.fileName ?? '',
           generatedFile: '',
-          generatedLineNumber,
-          generatedColumnNumber,
+          generatedLineNumber: stackFrame.lineNumber ?? null,
+          generatedColumnNumber: stackFrame.columnNumber ?? null,
           generatedCallerLine: '',
         };
 
@@ -220,23 +301,28 @@ export async function contextualizeError(runtimeError: Error, options?: { output
             }
           }
 
-          // Parse error stack to extract error location details
-          const errorStackLines = runtimeError.stack?.split('\n') || [];
-          const errorFileDetails = errorStackLines[1]?.trim().match(/at\s+(.+):(\d+):(\d+)/);
+          // // Parse error stack to extract error location details
+          // const errorStackLines = runtimeError.stack?.split('\n') || [];
+          // const errorFileDetails = errorStackLines[1]?.trim().match(/at\s+(.+):(\d+):(\d+)/);
 
-          if (errorFileDetails) {
-            context.generatedErrorLineNumber = Number(errorFileDetails[2]);
-            context.generatedErrorColumn = Number(errorFileDetails[3]) - 1;
+          context.errorMessageStack = runtimeStackTrace.error.toString();
+
+          if (stackFrame.fileName) {
+            // context.generatedErrorLineNumber = Number(errorFileDetails[2]);
+            // context.generatedErrorColumn = Number(errorFileDetails[3]) - 1;
+
+            context.generatedErrorLineNumber = stackFrame.lineNumber;
+            context.generatedErrorColumn = stackFrame.columnNumber;
           }
         }
 
         // Read and store generated file contents
-        context.generatedFile = fs.readFileSync(generatedFileName, 'utf8');
+        context.generatedFile = fs.readFileSync(stackFrame.fileName, 'utf8');
         const generatedLines = context.generatedFile.split('\n');
-        context.generatedCallerLine = generatedLines[generatedLineNumber - 1]?.trim() || '';
+        context.generatedCallerLine = generatedLines[stackFrame.lineNumber - 1]?.trim() || '';
 
         // Extract code snippets from generated file
-        extractCodeSnippets(context.generatedFile, generatedLineNumber, context, 'generated');
+        extractCodeSnippets(context.generatedFile, stackFrame.lineNumber, context, 'generated');
 
         if (context.generatedErrorLineNumber && context.generatedErrorColumn) {
           context.generatedErrorLine = generatedLines[context.generatedErrorLineNumber - 1]?.trim() || '';
@@ -248,7 +334,7 @@ export async function contextualizeError(runtimeError: Error, options?: { output
           );
         }
 
-        const mapFileName = `${generatedFileName}.map`;
+        const mapFileName = `${context.generatedFileName}.map`;
         if (fs.existsSync(mapFileName)) {
           try {
             // Load and parse the source map
@@ -258,8 +344,8 @@ export async function contextualizeError(runtimeError: Error, options?: { output
               .SourceMapConsumer.with(rawSourceMap, null, async (consumer) => {
                 // Calculate original position
                 const originalPosition = consumer.originalPositionFor({
-                  line: generatedLineNumber,
-                  column: generatedColumnNumber,
+                  line: context.generatedLineNumber,
+                  column: context.generatedColumnNumber,
                 });
 
                 // Populate context with original file details
@@ -277,7 +363,7 @@ export async function contextualizeError(runtimeError: Error, options?: { output
 
                     if (!originalFileContents) {
                       const resolvedOriginalFilePath = path.resolve(
-                        path.dirname(generatedFileName),
+                        path.dirname(context.generatedFileName),
                         context.originalFileName
                       );
                       originalFileContents = fs.readFileSync(
@@ -331,7 +417,7 @@ export async function contextualizeError(runtimeError: Error, options?: { output
               })
               .catch((err) => {
                 console.warn(
-                  `Error processing source map for ${generatedFileName}: ${err}`
+                  `Error processing source map for ${stackFrame.fileName}: ${err}`
                 );
               });
           } catch (err) {
@@ -342,7 +428,7 @@ export async function contextualizeError(runtimeError: Error, options?: { output
         // Add the context for the current frame to the result array
         referencedScripts.push(context);
       } catch (err) {
-        console.warn(`Error reading or processing file: ${generatedFileName}`, err);
+        console.warn(`Error reading or processing file: ${stackFrame.fileName}`, err);
       }
     })
   );

@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpError } from '../errors/http.error';
-import { logger } from '../utils/logger';
 import { contextualizeError } from '../../genai-debugging';
 
 // Define an error handling middleware function
