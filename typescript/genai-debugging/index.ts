@@ -19,7 +19,7 @@ export interface StackFrame {
   getColumnNumber: () => number | null;
 };
 
-export interface FullStackTrace {
+export interface AugmentedStackTrace {
   error: Error;
   stack: string;
   structuredStack: StackFrame[];
@@ -60,16 +60,21 @@ function defaultPrepareStackTrace(error, trace) {
   return `${errorString}\n    at ${trace.join('\n    at ')}`;
 }
 
+// Create a new module declaration to avoid conflicts
+declare global {
+  interface Error {
+    catchToLLM?: AugmentedStackTrace; 
+  }
+}
+
 // Run at the beginning of application to initialize the error handling
 // Only initialize in development environment
 export const initializeCatchToLLM = () => {
-  // Override the default Error.prepareStackTrace to return FullStackTrace
-  Error.prepareStackTrace = (error, structuredStack): FullStackTrace => {
-    const stack = defaultPrepareStackTrace(error, structuredStack);
-
-    return {
+  const originalPrepareStackTrace = Error.prepareStackTrace;
+  // Override the default Error.prepareStackTrace to return AugmentedStackTrace
+  Error.prepareStackTrace = (error, structuredStack): AugmentedStackTrace => {
+    (error as any).catchToLLM = {
       error,
-      stack,
       structuredStack: structuredStack as StackFrame[],
       parsedStack: structuredStack.map((frame) => ({
         functionName: frame.getFunctionName(),
@@ -81,6 +86,9 @@ export const initializeCatchToLLM = () => {
         enclosingColumnNumber: frame.getEnclosingColumnNumber(),
       })),
     };
+
+    const stack = defaultPrepareStackTrace(error, structuredStack);
+    return stack;
   };
 }
 
@@ -208,18 +216,18 @@ export async function contextualizeError(runtimeError: Error, options?: { output
   const snapshotError = new Error();
   Error.captureStackTrace(snapshotError);
 
-  // Check if snapshotError contains the attribute "stack.parsedStack"
+  // Check if snapshotError contains the attribute "catchToLLM"
   // If it does, the library has been initialized
   // If it does not, exit
-  if (!snapshotError.stack || !(snapshotError.stack as any).parsedStack) {
+  if (!snapshotError.catchToLLM || !(snapshotError.catchToLLM as any).parsedStack) {
     console.warn('contextualizeError was called before the library was initialized.');
     console.warn('Please ensure that the library is initialized before calling this function.');
-    console.warn('Note: catch-to-llm should only be initialized in development environments.');
+    console.warn('Note: catch-to-llm should only be initialized or called in development environments.');
     return;
   }
   
-  const snapshotStackTrace = snapshotError.stack as unknown as FullStackTrace;
-  const runtimeStackTrace = runtimeError.stack as unknown as FullStackTrace;
+  const snapshotStackTrace = snapshotError.stack as unknown as AugmentedStackTrace;
+  const runtimeStackTrace = runtimeError.stack as unknown as AugmentedStackTrace;
   
   // Log to console the output of each frame of the snapshotError.stack calling the getFileName methods on each frame
   console.log(snapshotStackTrace.structuredStack.map((frame) => frame.getFileName()));
