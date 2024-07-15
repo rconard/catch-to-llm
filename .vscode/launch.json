@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Typescript Debug",
+            "cwd": "${workspaceFolder}/typescript", // Specify the working directory
+            "runtimeExecutable": "npm", // Use npm to run the script
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ], // Run the 'dev' script
+            "skipFiles": [
+                "<node_internals>/**"
+            ], // Skip debugging node internal files
+            "internalConsoleOptions": "openOnSessionStart" // Open the debug console on start
+        }
+    ]
+}

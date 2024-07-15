@@ -1,0 +1,91 @@
+# Node modules for TypeScript project
+/.pnpm-store/
+/typescript/node_modules/
+/typescript/.pnpm-store/
+
+# TypeScript build output
+/typescript/dist/
+/typescript/build/
+/typescript/out/
+
+# TypeScript cache
+/typescript/.tscache/
+/typescript/tsconfig.tsbuildinfo
+
+# Environment files
+/typescript/.env
+/typescript/.env.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python virtual environments
+/python/venv/
+/python/env/
+/python/.venv/
+
+# Python byte-compiled / optimized / DLL files
+/python/__pycache__/
+/python/**/*.py[cod]
+/python/**/__pycache__/
+/python/**/*.pyo
+/python/**/*.pyd
+/python/**/$py.class
+
+# Python distribution / packaging
+/python/.Python
+/python/build/
+/python/develop-eggs/
+/python/dist/
+/python/downloads/
+/python/eggs/
+/python/.eggs/
+/python/lib/
+/python/lib64/
+/python/parts/
+/python/sdist/
+/python/var/
+/python/wheels/
+/python/share/python-wheels/
+/python/.installed.cfg
+/python/**/*.egg-info/
+/python/.egg-info/
+/python/.eggs/
+/python/pip-log.txt
+/python/pip-delete-this-directory.txt
+
+# Jupyter Notebook
+/python/.ipynb_checkpoints
+
+# PyInstaller
+/python/**/*.spec
+
+# Django stuff:
+/python/**/*.log
+/python/**/*.sqlite3
+/python/**/*.pyc
+
+# Flask stuff
+/python/instance/
+/python/.webassets-cache
+
+# Scrapy stuff
+/python/.scrapy
+
+# Sphinx documentation
+/python/docs/_build/
+
+# Pyre type checker
+/python/.pyre/
+
+# mypy
+/python/.mypy_cache/
+
+# Pytest
+/python/.pytest_cache/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
