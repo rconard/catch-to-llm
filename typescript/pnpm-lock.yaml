@@ -17,6 +17,9 @@ importers:
       acorn-walk:
         specifier: ^8.3.3
         version: 8.3.3
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
       error-stack-parser:
         specifier: ^2.1.4
         version: 2.1.4
@@ -66,9 +69,6 @@ importers:
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.4.5
       eslint:
         specifier: ^9.6.0
         version: 9.6.0
