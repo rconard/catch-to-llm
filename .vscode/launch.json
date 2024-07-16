@@ -4,17 +4,40 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Typescript Debug",
-            "cwd": "${workspaceFolder}/typescript", // Specify the working directory
-            "runtimeExecutable": "npm", // Use npm to run the script
+            "name": "API Debug",
+            "cwd": "${workspaceFolder}/typescript",
+            "runtimeExecutable": "pnpm",
             "runtimeArgs": [
                 "run",
-                "dev"
-            ], // Run the 'dev' script
+                "dev:api"
+            ],
             "skipFiles": [
                 "<node_internals>/**"
-            ], // Skip debugging node internal files
-            "internalConsoleOptions": "openOnSessionStart" // Open the debug console on start
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Webapp Debug",
+            "cwd": "${workspaceFolder}/typescript",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "run",
+                "dev:webapp"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "API/Webapp Debug",
+            "configurations": ["API Debug", "Webapp Debug"],
+            "stopAll": true
         }
     ]
 }

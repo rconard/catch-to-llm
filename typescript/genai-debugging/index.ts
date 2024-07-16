@@ -12,6 +12,7 @@ import * as sourceMap from 'source-map';
 import * as tsEstree from '@typescript-eslint/typescript-estree';
 import { base as tsBase } from './ts-base';
 import ErrorStackParser from 'error-stack-parser';
+import { run } from 'node:test';
 
 export interface StackFrame {
   getFileName: () => string | null;
@@ -70,7 +71,6 @@ declare global {
 // Run at the beginning of application to initialize the error handling
 // Only initialize in development environment
 export const initializeCatchToLLM = () => {
-  const originalPrepareStackTrace = Error.prepareStackTrace;
   // Override the default Error.prepareStackTrace to return AugmentedStackTrace
   Error.prepareStackTrace = (error, structuredStack): AugmentedStackTrace => {
     (error as any).catchToLLM = {
@@ -213,14 +213,16 @@ export async function contextualizeError(runtimeError: Error, options?: { output
   const outputFile = options?.outputFile || 'error-context.json';
   const referencedScripts: CodeContext[] = [];
 
-  // If the structuredStack is not available, create a new Error object to capture the stack trace
+  // Create a new Error object to capture the stack trace
   const snapshotError = new Error();
   Error.captureStackTrace(snapshotError);
   
   // Handles a race condition where the script proceeds without finishing Error.captureStackTrace
   // This seems to be a case of Schrodinger's stack trace where it must be observed to exist.
   // Note that this will work regardless of whether this library was properly initialized as it does not rely on any modifications to the Error object.
-  const stackLen = snapshotError.stack.length;
+  const snapshotStackLen = snapshotError.stack.length;
+  const runtimeStackLen = snapshotError.stack.length;
+  console.log(snapshotStackLen, runtimeStackLen);
 
   // Check if our newly created error contains the attribute "catchToLLM"
   // If it does, the library has been initialized
@@ -232,7 +234,10 @@ export async function contextualizeError(runtimeError: Error, options?: { output
     return;
   }
   
+  console.log(runtimeError);
+  console.log(runtimeError.catchToLLM);
   const runtimeStackTrace = runtimeError.catchToLLM as unknown as AugmentedStackTrace;
+  console.log(runtimeStackTrace);
 
   let stackTraceOfRecord = runtimeStackTrace;
   // Validate stack trace
@@ -499,15 +504,15 @@ function extractCodeSnippets(
 
     // Walk the AST to find relevant function scopes (closures)
     walk.simple(
-      ast,
+      ast as acorn.Node,
       {
-        FunctionDeclaration(node, state, ancestors) {
+        FunctionDeclaration(node, state) {
           findClosureAndSection(node, lines, lineNumber, context, target);
         },
-        FunctionExpression(node, state, ancestors) {
+        FunctionExpression(node, state) {
           findClosureAndSection(node, lines, lineNumber, context, target);
         },
-        ArrowFunctionExpression(node, state, ancestors) {
+        ArrowFunctionExpression(node, state) {
           findClosureAndSection(node, lines, lineNumber, context, target);
         },
       },
