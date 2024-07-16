@@ -213,59 +213,75 @@ export async function contextualizeError(runtimeError: Error, options?: { output
   const outputFile = options?.outputFile || 'error-context.json';
   const referencedScripts: CodeContext[] = [];
 
+  // If the structuredStack is not available, create a new Error object to capture the stack trace
   const snapshotError = new Error();
   Error.captureStackTrace(snapshotError);
+  
+  // Handles a race condition where the script proceeds without finishing Error.captureStackTrace
+  // This seems to be a case of Schrodinger's stack trace where it must be observed to exist.
+  // Note that this will work regardless of whether this library was properly initialized as it does not rely on any modifications to the Error object.
+  const stackLen = snapshotError.stack.length;
 
-  // Check if snapshotError contains the attribute "catchToLLM"
+  // Check if our newly created error contains the attribute "catchToLLM"
   // If it does, the library has been initialized
-  // If it does not, exit
-  if (!snapshotError.catchToLLM || !(snapshotError.catchToLLM as any).parsedStack) {
+  // If it does not, exit the function and log a warning
+  if (!snapshotError.catchToLLM || (snapshotError.catchToLLM.parsedStack.length === 0)) {
     console.warn('contextualizeError was called before the library was initialized.');
     console.warn('Please ensure that the library is initialized before calling this function.');
     console.warn('Note: catch-to-llm should only be initialized or called in development environments.');
     return;
   }
   
-  const snapshotStackTrace = snapshotError.stack as unknown as AugmentedStackTrace;
-  const runtimeStackTrace = runtimeError.stack as unknown as AugmentedStackTrace;
-  
-  // Log to console the output of each frame of the snapshotError.stack calling the getFileName methods on each frame
-  console.log(snapshotStackTrace.structuredStack.map((frame) => frame.getFileName()));
+  const runtimeStackTrace = runtimeError.catchToLLM as unknown as AugmentedStackTrace;
 
-  // Error.prepareStackTrace = oldPrepareStackTrace;
+  let stackTraceOfRecord = runtimeStackTrace;
+  // Validate stack trace
+  if (!runtimeStackTrace.structuredStack || (runtimeStackTrace.structuredStack.length <= 1)) {
+    const snapshotStackTrace = snapshotError.catchToLLM as unknown as AugmentedStackTrace;
+    stackTraceOfRecord = snapshotStackTrace;
+  }
 
+  // TODO: Come back to this working on browser implementation
   // Parse the error stack trace provided by the runtime error
   // const parsedRuntimeErrorStack = ErrorStackParser.parse(runtimeError);
   // console.log(parsedRuntimeErrorStack);
 
-  let stackTraceOfRecord = runtimeStackTrace;
-  // Validate stack trace
-  if (!runtimeStackTrace.structuredStack) {
-    stackTraceOfRecord = snapshotStackTrace;
-  }
+  // Get the current filename for filtering
+  const currentFilename = snapshotError.catchToLLM.parsedStack[0].fileName;
 
   // Filter stack frames to remove extraneous entries
-  let foundTopNodeModulesFrame = false;
+  let foundNonNodeModulesFrame = false;
   const stackFrames = stackTraceOfRecord.parsedStack.filter((frame, index) => {
-    if (index === 0) {
-      // Skip the first frame as it's always this function call
+    // Filter out the current file
+    // This is most likely to be used when the `stackTraceOfRecord` is from the snapshotError
+    if (frame.fileName === currentFilename) {
       return false;
     }
 
-    const fileName = frame.fileName;
-    console.log(fileName);
-    if (fileName && (fileName.includes('node:') || fileName.includes('node_modules') || !fileName.startsWith('/'))) {
-      if (!foundTopNodeModulesFrame) {
-        // Keep the first external frame for context
-        foundTopNodeModulesFrame = true;
-        return true;
-      }
-      // Filter out subsequent external frames
+
+    // Filter out "node:" frames as there is no reliable way to access internals
+    if (frame.fileName && frame.fileName.includes('node:')) {
       return false;
     }
-    // Keep all other frames
+
+    // Keep all "node_modules" frames until a non-"node_modules" frame is found
+    if (frame.fileName && frame.fileName.includes('node_modules')) {
+      if (foundNonNodeModulesFrame) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    // Keep the first non-"node_modules" frame
+    foundNonNodeModulesFrame = true;
     return true;
   });
+
+  // If all remaining frames are "node_modules" frames, keep only the first one
+  if (stackFrames.every(frame => frame.fileName && frame.fileName.includes('node_modules'))) {
+    stackFrames.splice(1);
+  }
 
   // Asynchronously process each frame to allow for potential delays in source map loading
   await Promise.all(
@@ -295,9 +311,9 @@ export async function contextualizeError(runtimeError: Error, options?: { output
           // Initialize an empty object to store error fields
           context.errorFields = {};
 
-          // Iterate over the runtimeError entries, excluding 'message' and 'stack'
+          // Iterate over the runtimeError entries, excluding 'catchToLLM', 'message', and 'stack'
           for (const [key, value] of Object.entries(runtimeError)) {
-            if (key !== 'message' && key !== 'stack') {
+            if (key !== 'catchToLLM' && key !== 'message' && key !== 'stack') {
               // Attempt to create a human-readable representation of the value
               try {
                 context.errorFields[key] = JSON.stringify(value, null, 2); // Pretty-print JSON
