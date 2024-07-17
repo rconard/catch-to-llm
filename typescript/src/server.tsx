@@ -2,28 +2,24 @@ import express from 'express';
 import path from 'path';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { StaticRouter } from 'react-router-dom/server';
-import { App } from './webapp/App';
-import { router as API } from './routes'; // Import API routes
+import { StaticRouter } from "react-router-dom/server";
+import { router as API } from './routes'; 
+import { router as appRouter } from './webapp/App';
+import { RouterProvider } from 'react-router-dom';
 
 const app = express();
 const port = 3000;
 
-// Middleware to parse URL-encoded bodies (needed for API)
 app.use(express.urlencoded({ extended: true }));
-
-// Serve static files
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
-// Use API routes under '/api' path
 app.use('/api', API);
 
-// SSR for all other routes
 app.get('*', (req, res) => {
+  const isSSR = typeof window === 'undefined'; // Check if it's server-side
+
   const html = renderToString(
-    <StaticRouter location={req.url}>
-      <App />
-    </StaticRouter>
+      <RouterProvider router={appRouter} />
   );
 
   res.send(`
