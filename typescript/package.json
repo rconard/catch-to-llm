@@ -4,10 +4,14 @@
   "description": "GenAI Exception Debugging Developer Tools",
   "main": "dist/src/server.js",
   "scripts": {
-    "start": "NODE_ENV=production node ./dist/server.js",
-    "dev": "concurrently \"tsc -w -p tsconfig.json\" \"webpack serve --mode development\"", 
-    "build": "webpack --mode production",
-    "test": "jest"
+    "start": "NODE_ENV=production node ./dist/src/index.js",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:webapp\"",
+    "dev:api": "NODE_ENV=development concurrently \"tsc -w -p tsconfig.json\" \"nodemon ./dist/src/server.js\"",
+    "dev:webapp": "webpack serve --config webpack.config.webapp.js --mode development",
+    "build": "npm run build:api && npm run build:webapp",
+    "build:api": "tsc -p tsconfig.json",
+    "build:webapp": "webpack --config webpack.config.webapp.js --mode production",
+    "test": "jest" 
   },
   "repository": {
     "type": "git",
