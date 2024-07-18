@@ -12,7 +12,7 @@ const app = express();
 const port = 3000;
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..', 'dist')));
+app.use(express.static(path.join(__dirname, '..', '..', 'public')));
 
 app.use('/api', API);
 
@@ -31,7 +31,7 @@ app.get('*', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>React SSR App</title>
+      <title>Catch-to-LLM Test Suite</title>
     </head>
     <body>
       <div id="root">${appHtml}</div>

@@ -5,8 +5,7 @@
 
 # TypeScript build output
 /typescript/dist/
-/typescript/build/
-/typescript/out/
+/typescript/public/
 
 # TypeScript cache
 /typescript/.tscache/
