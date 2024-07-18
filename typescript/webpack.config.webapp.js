@@ -36,5 +36,12 @@ module.exports = {
     port: process.env.WEBPACK_DEV_SERVER_PORT || 9000,
     historyApiFallback: true,
     hot: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        secure: false,
+        changeOrigin: true,
+      },
+    },
   },
 };

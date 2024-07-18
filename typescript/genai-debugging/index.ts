@@ -12,7 +12,6 @@ import * as sourceMap from 'source-map';
 import * as tsEstree from '@typescript-eslint/typescript-estree';
 import { base as tsBase } from './ts-base';
 import ErrorStackParser from 'error-stack-parser';
-import { run } from 'node:test';
 
 export interface StackFrame {
   getFileName: () => string | null;
@@ -210,7 +209,7 @@ interface CodeContext {
  * ```
  */
 export async function contextualizeError(runtimeError: Error, options?: { outputFile?: string }): Promise<void> {
-  const outputFile = options?.outputFile || 'error-context.json';
+  const outputFile = options?.outputFile || '../error-context.json';
   const referencedScripts: CodeContext[] = [];
 
   // Create a new Error object to capture the stack trace

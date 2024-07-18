@@ -1,7 +1,9 @@
+// ./src/webapp/index.tsx
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, RouterProvider } from 'react-router-dom';
-import { router as appRouter } from './App';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -9,6 +11,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <RouterProvider router={appRouter} />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );

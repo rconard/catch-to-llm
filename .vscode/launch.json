@@ -4,12 +4,12 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "API Debug",
+            "name": "Typescript API & SSR Debug",
             "cwd": "${workspaceFolder}/typescript",
             "runtimeExecutable": "pnpm",
             "runtimeArgs": [
                 "run",
-                "dev:api"
+                "dev:server"
             ],
             "skipFiles": [
                 "<node_internals>/**"
@@ -19,7 +19,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Webapp Debug",
+            "name": "Typescript Webapp Debug",
             "cwd": "${workspaceFolder}/typescript",
             "runtimeExecutable": "pnpm",
             "runtimeArgs": [
@@ -35,8 +35,8 @@
     ],
     "compounds": [
         {
-            "name": "API/Webapp Debug",
-            "configurations": ["API Debug", "Webapp Debug"],
+            "name": "Typescript Webapp Debug w/ API",
+            "configurations": ["Typescript API & SSR Debug", "Typescript Webapp Debug"],
             "stopAll": true
         }
     ]
