@@ -7,6 +7,9 @@ import { renderToString } from 'react-dom/server';
 import { StaticRouter } from "react-router-dom/server";
 import { router as API } from './routes'; 
 import App from './webapp/App';
+import { initializeCatchToLLM } from '../catch-to-llm/initialize';
+
+initializeCatchToLLM();
 
 const app = express();
 const port = 3000;

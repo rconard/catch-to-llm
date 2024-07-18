@@ -1,0 +1,35 @@
+[
+  {
+    "stackIndex": 0,
+    "generatedFileName": "/workspaces/catch-to-llm/typescript/dist/src/routes/caught-by-route.route.js",
+    "generatedFile": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.caughtByRoute = void 0;\nconst express_1 = require(\"express\");\nconst http_error_1 = require(\"../errors/http.error\");\nconst catch_to_llm_1 = require(\"../../catch-to-llm\");\nconst caughtByRoute = (0, express_1.Router)();\nexports.caughtByRoute = caughtByRoute;\n// URL: http://localhost:3000/tests/caught-by-route\n// Define a route handler for GET requests to 'tests/caught-by-route'\ncaughtByRoute.get('/', (req, res, next) => {\n    try {\n        throw new http_error_1.HttpError(418, 'This error will be caught by Route');\n    }\n    catch (error) {\n        (0, catch_to_llm_1.contextualizeError)(error);\n    }\n    finally {\n        res.status(200).send('Error caught by Route');\n    }\n});\n//# sourceMappingURL=caught-by-route.route.js.map",
+    "generatedLineNumber": 13,
+    "generatedColumnNumber": 15,
+    "generatedCallerLine": "throw new http_error_1.HttpError(418, 'This error will be caught by Route');",
+    "errorMessage": "This error will be caught by Route",
+    "errorFields": {
+      "name": "\"HttpError\"",
+      "statusCode": "418"
+    },
+    "errorMessageStack": "HttpError: This error will be caught by Route",
+    "generatedErrorLineNumber": 13,
+    "generatedErrorColumn": 15,
+    "generatedClosure": "caughtByRoute.get('/', (req, res, next) => {\n    try {\n        throw new http_error_1.HttpError(418, 'This error will be caught by Route');\n    }\n    catch (error) {\n        (0, catch_to_llm_1.contextualizeError)(error);\n    }\n    finally {\n        res.status(200).send('Error caught by Route');\n    }\n});",
+    "generatedSection": "caughtByRoute.get('/', (req, res, next) => {\n    try {\n        throw new http_error_1.HttpError(418, 'This error will be caught by Route');\n    }\n    catch (error) {\n        (0, catch_to_llm_1.contextualizeError)(error);\n    }\n    finally {\n        res.status(200).send('Error caught by Route');\n    }\n});",
+    "generatedErrorLine": "throw new http_error_1.HttpError(418, 'This error will be caught by Route');",
+    "generatedErrorClosure": "caughtByRoute.get('/', (req, res, next) => {\n    try {\n        throw new http_error_1.HttpError(418, 'This error will be caught by Route');\n    }\n    catch (error) {\n        (0, catch_to_llm_1.contextualizeError)(error);\n    }\n    finally {\n        res.status(200).send('Error caught by Route');\n    }\n});",
+    "generatedErrorSection": "caughtByRoute.get('/', (req, res, next) => {\n    try {\n        throw new http_error_1.HttpError(418, 'This error will be caught by Route');\n    }\n    catch (error) {\n        (0, catch_to_llm_1.contextualizeError)(error);\n    }\n    finally {\n        res.status(200).send('Error caught by Route');\n    }\n});",
+    "originalFileName": "../../../src/routes/caught-by-route.route.ts",
+    "originalLineNumber": 11,
+    "originalColumnNumber": 10,
+    "originalFile": "import { NextFunction, Request, Response, Router } from 'express';\nimport { HttpError } from '../errors/http.error';\nimport { contextualizeError } from '../../catch-to-llm';\n\nconst caughtByRoute = Router();\n\n// URL: http://localhost:3000/tests/caught-by-route\n// Define a route handler for GET requests to 'tests/caught-by-route'\ncaughtByRoute.get('/', (req: Request, res: Response, next: NextFunction) => {\n  try {\n    throw new HttpError(418, 'This error will be caught by Route');\n  } catch (error) {\n    contextualizeError(error);\n  } finally {\n    res.status(200).send('Error caught by Route');\n  }\n});\n\nexport { caughtByRoute };\n",
+    "originalCallerLine": "throw new HttpError(418, 'This error will be caught by Route');",
+    "originalClosure": "caughtByRoute.get('/', (req: Request, res: Response, next: NextFunction) => {\n  try {\n    throw new HttpError(418, 'This error will be caught by Route');\n  } catch (error) {\n    contextualizeError(error);\n  } finally {\n    res.status(200).send('Error caught by Route');\n  }\n});",
+    "originalSection": "caughtByRoute.get('/', (req: Request, res: Response, next: NextFunction) => {\n  try {\n    throw new HttpError(418, 'This error will be caught by Route');\n  } catch (error) {\n    contextualizeError(error);\n  } finally {\n    res.status(200).send('Error caught by Route');\n  }\n});",
+    "originalErrorLineNumber": 11,
+    "originalErrorColumn": 10,
+    "originalErrorLine": "throw new HttpError(418, 'This error will be caught by Route');",
+    "originalErrorClosure": "caughtByRoute.get('/', (req: Request, res: Response, next: NextFunction) => {\n  try {\n    throw new HttpError(418, 'This error will be caught by Route');\n  } catch (error) {\n    contextualizeError(error);\n  } finally {\n    res.status(200).send('Error caught by Route');\n  }\n});",
+    "originalErrorSection": "caughtByRoute.get('/', (req: Request, res: Response, next: NextFunction) => {\n  try {\n    throw new HttpError(418, 'This error will be caught by Route');\n  } catch (error) {\n    contextualizeError(error);\n  } finally {\n    res.status(200).send('Error caught by Route');\n  }\n});"
+  }
+]

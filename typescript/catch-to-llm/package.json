@@ -1,0 +1,33 @@
+{
+  "name": "catch-to-llm",
+  "version": "0.1.0",
+  "description": "Debugging tool for Typescript projects to leverage LLM's",
+  "main": "/dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rconard/catch-to-llm.git\".git"
+  },
+  "author": "Russell Conard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rconard/catch-to-llm.git\"/issues"
+  },
+  "homepage": "https://github.com/rconard/catch-to-llm.git\"#readme",
+  "dependencies": {
+    "@typescript-eslint/typescript-estree": "^7.16.1",
+    "acorn": "^8.12.1",
+    "acorn-walk": "^8.3.3",
+    "cors": "^2.8.5",
+    "detect-node": "^2.1.0",
+    "error-stack-parser": "^2.1.4",
+    "express": "^4.19.2",
+    "source-map": "^0.7.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "typescript": "^5.5.3"
+  }
+}

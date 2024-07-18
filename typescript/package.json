@@ -26,6 +26,7 @@
     "@typescript-eslint/typescript-estree": "^7.16.0",
     "acorn": "^8.12.1",
     "acorn-walk": "^8.3.3",
+    "cors": "^2.8.5",
     "detect-node": "^2.1.0",
     "dotenv": "^16.4.5",
     "error-stack-parser": "^2.1.4",

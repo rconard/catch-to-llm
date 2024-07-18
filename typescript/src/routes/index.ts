@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { errorHandler } from '../middlewares/error-handler.middleware';
 import { errorCatchSyncMiddleware } from '../middlewares/error-catch-sync.middleware';
 import { errorCatchAsyncMiddleware } from '../middlewares/error-catch-async.middleware';
+import { frontendData } from './frontend-data.route';
 import { caughtByRoute } from './caught-by-route.route';
 import { caughtByExpress } from './caught-by-express.route';
 import { caughtByNextExpress } from './caught-by-next-express.route';
@@ -12,6 +13,10 @@ import { caughtBySyncMiddleware } from './caught-by-middleware-sync.route';
 import { libraryCaughtByNextCustomErrorHandler } from './library-caught-by-next-custom-error-handler.route';
 
 const router = Router();
+
+// Use the caughtByRoute for the '/caught-by-route' path
+// Send a GET request
+router.use('/data', frontendData);
 
 // Use the caughtByRoute for the '/caught-by-route' path
 // Send a GET request

@@ -1,50 +1,8 @@
+// catch-to-llm/initialize.ts
 
-export interface StackFrame {
-  getFileName: () => string | null;
-  getLineNumber: () => number | null;
-  getColumnNumber: () => number | null;
-};
+var isNode = require('detect-node');
 
-export interface AugmentedStackTrace {
-  error: Error;
-  stack: string;
-  structuredStack: StackFrame[];
-  parsedStack: {
-    functionName?: string | null;
-    fileName: string | null;
-    scriptNameOrSourceURL?: string | null;
-    lineNumber: number | null;
-    enclosingLineNumber?: number | null;
-    columnNumber: number | null;
-    enclosingColumnNumber?: number | null;
-  }[];
-};
-
-/**
- * Modified implementation of `Error.prepareStackTrace` with simple
- * concatenation of stack frames.
- * Adapted from Source: https://github.com/nodejs/node/blob/main/lib/internal/errors.js
- * Read more about `Error.prepareStackTrace` at https://v8.dev/docs/stack-trace-api#customizing-stack-traces.
- */
-function defaultPrepareStackTrace(error, trace) {
-  const kIsNodeError = Symbol('kIsNodeError');
-
-  // Normal error formatting:
-  //
-  // Error: Message
-  //     at function (file)
-  //     at file
-  let errorString;
-  if (kIsNodeError in error) {
-    errorString = `${error.name} [${error.code}]: ${error.message}`;
-  } else {
-    errorString = error.toString();
-  }
-  if (trace.length === 0) {
-    return errorString;
-  }
-  return `${errorString}\n    at ${trace.join('\n    at ')}`;
-}
+import { AugmentedStackTrace, StackFrame } from './initialize';
 
 // Create a new module declaration to avoid conflicts
 declare global {
@@ -57,10 +15,10 @@ declare global {
 // Only initialize in development environment
 export const initializeCatchToLLM = () => {
   // Override the default Error.prepareStackTrace to return AugmentedStackTrace
-  Error.prepareStackTrace = (error, structuredStack): AugmentedStackTrace => {
+  Error.prepareStackTrace = (error, structuredStack) => {
     (error as any).catchToLLM = {
       error,
-      structuredStack: structuredStack as StackFrame[],
+      structuredStack,
       parsedStack: structuredStack.map((frame) => ({
         functionName: frame.getFunctionName(),
         fileName: frame.getFileName(),
@@ -75,4 +33,31 @@ export const initializeCatchToLLM = () => {
     const stack = defaultPrepareStackTrace(error, structuredStack);
     return stack;
   };
+}
+
+/**
+ * Modified implementation of `Error.prepareStackTrace` with simple
+ * concatenation of stack frames.
+ * Adapted from Source: https://github.com/nodejs/node/blob/main/lib/internal/errors.js
+ * Read more about `Error.prepareStackTrace` at https://v8.dev/docs/stack-trace-api#customizing-stack-traces.
+ */
+function defaultPrepareStackTrace(error, trace): string {
+  const kIsNodeError = Symbol('kIsNodeError');
+
+  // Normal error formatting:
+  //
+  // Error: Message
+  //     at function (file)
+  //     at file
+  let errorString: string;
+
+  if (kIsNodeError in error) {
+    errorString = `${error.name} [${error.code}]: ${error.message}`;
+  } else {
+    errorString = error.toString();
+  }
+  if (trace.length === 0) {
+    return errorString;
+  }
+  return `${errorString}\n    at ${trace.join('\n    at ')}`;
 }

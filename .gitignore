@@ -2,6 +2,8 @@
 /.pnpm-store/
 /typescript/node_modules/
 /typescript/.pnpm-store/
+/typescript/catch-to-llm/node_modules/
+/typescript/catch-to-llm/.pnpm-store/
 
 # TypeScript build output
 /typescript/dist/

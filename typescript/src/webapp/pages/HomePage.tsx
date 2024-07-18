@@ -1,10 +1,15 @@
 import React from 'react';
+import { useTheme, useThemeUpdate } from '../contexts/ThemeContext';
 
 const HomePage: React.FC = () => {
+  const theme = useTheme();
+  const toggleTheme = useThemeUpdate();
+
   return (
-    <div>
-      <h1>Welcome to the Test Server!</h1>
-      <p>This is a simple server for testing various functionalities.</p>
+    <div style={{ background: theme === 'light' ? '#fff' : '#333', color: theme === 'light' ? '#000' : '#fff' }}>
+      <h1>Home Page</h1>
+      <p>The current theme is {theme}</p>
+      <button onClick={toggleTheme}>Toggle Theme</button>
     </div>
   );
 };

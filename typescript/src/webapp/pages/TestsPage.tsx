@@ -10,10 +10,13 @@ const TestsPage: React.FC = () => {
           <Link to="/tests/basic">Basic Test</Link>
         </li>
         <li>
-          <Link to="/tests/SSR">React Server Components Test</Link>
+          <Link to="/tests/error">React Context Provider Error Test</Link>
         </li>
         <li>
-          <Link to="/tests/Client">React Client Components Test</Link>
+          <Link to="/tests/client">React Browser Test</Link>
+        </li>
+        <li>
+          <Link to="/tests/ssr">React SSR Test</Link>
         </li>
       </ul>
     </div>
