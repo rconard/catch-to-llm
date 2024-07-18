@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpError } from '../errors/http.error';
-import { contextualizeError } from '../../genai-debugging';
+import { contextualizeError } from '../../catch-to-llm';
 
 // Define an error handling middleware function
 export const errorHandler = (

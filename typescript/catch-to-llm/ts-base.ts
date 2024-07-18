@@ -1,6 +1,6 @@
-// genai-debugging/ts-base.ts
+// catch-to-llm/ts-base.ts
 /**
- * @module genai-debugging/ts-base
+ * @module catch-to-llm/ts-base
  * This module extends the base visitor of acorn-walk to support TypeScript-specific AST nodes.
  */
 

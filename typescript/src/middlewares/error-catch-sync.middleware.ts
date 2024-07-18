@@ -1,4 +1,4 @@
-import { contextualizeError } from "../../genai-debugging";
+import { contextualizeError } from "../../catch-to-llm";
 import { HttpError } from '../errors/http.error';
 
 export const errorCatchSyncMiddleware = function (req, res, next) {
