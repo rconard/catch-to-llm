@@ -4,6 +4,21 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Typescript Catch-to-LLM Server",
+            "cwd": "${workspaceFolder}/typescript/catch-to-llm",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Typescript API & SSR Debug",
             "cwd": "${workspaceFolder}/typescript",
             "runtimeExecutable": "pnpm",
@@ -35,7 +50,12 @@
     ],
     "compounds": [
         {
-            "name": "Typescript Webapp Debug w/ API",
+            "name": "Typescript Library & Tests",
+            "configurations": ["Typescript Catch-to-LLM Server", "Typescript API & SSR Debug", "Typescript Webapp Debug"],
+            "stopAll": true
+        },
+        {
+            "name": "Typescript Tests",
             "configurations": ["Typescript API & SSR Debug", "Typescript Webapp Debug"],
             "stopAll": true
         }

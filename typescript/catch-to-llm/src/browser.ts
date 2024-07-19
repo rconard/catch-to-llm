@@ -1,11 +1,6 @@
-// catch-to-llm/browser.ts (Browser Specific Logic)
-import { AugmentedStackTrace } from './initialize.d';
-import { CodeContext } from './index.d';
+// catch-to-llm/browser.ts
 
-// Mock functions for browser environment
-const fs = {} as typeof import('fs');
-fs.readFileSync = () => '';
-fs.existsSync = () => false;
+import { AugmentedStackTrace } from './initialize.d';
 
 /**
  * @async
@@ -65,7 +60,7 @@ export async function contextualizeError(runtimeError: Error, options?: { output
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ errorData, options }), 
+      body: JSON.stringify({ errorData, options }),
     });
 
     if (!response.ok) {

@@ -4,6 +4,9 @@
   "description": "Debugging tool for Typescript projects to leverage LLM's",
   "main": "/dist/index.js",
   "scripts": {
+    "dev": "NODE_ENV=development concurrently \"tsc -w -p tsconfig.server.json\" \"nodemon ./dist/server/index.js\"",
+    "build": "rollup -c rollup.config.browser.js && rollup -c rollup.config.node.js && tsc -p tsconfig.server.json",
+    "start:server": "node ./dist/server/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -13,21 +16,22 @@
   "author": "Russell Conard",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rconard/catch-to-llm.git\"/issues"
+    "url": "https://github.com/rconard/catch-to-llm/issues"
   },
-  "homepage": "https://github.com/rconard/catch-to-llm.git\"#readme",
+  "homepage": "https://github.com/rconard/catch-to-llm#readme",
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^7.16.1",
     "acorn": "^8.12.1",
     "acorn-walk": "^8.3.3",
     "cors": "^2.8.5",
     "detect-node": "^2.1.0",
-    "error-stack-parser": "^2.1.4",
     "express": "^4.19.2",
     "source-map": "^0.7.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.4",
     "typescript": "^5.5.3"
   }
 }

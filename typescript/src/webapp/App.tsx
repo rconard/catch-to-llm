@@ -10,7 +10,7 @@ import BasicTestPage from './pages/tests/BasicTestPage';
 import ErrorProviderPage from './pages/tests/ErrorProviderPage';
 import ClientTestPage from './pages/tests/ClientTestPage';
 import SSRTestPage from './pages/tests/SSRTestPage';
-import { initializeCatchToLLM } from '../../catch-to-llm/initialize';
+import { initializeCatchToLLM } from '../../catch-to-llm/dist/initialize';
 
 const App: React.FC = () => {
   useEffect(() => {

@@ -1,6 +1,17 @@
 // catch-to-llm/initialize.d.ts
 
 /**
+ * @interface CatchToLLMOptions
+ * Defines options for the `catch-to-llm` library.
+ */
+export interface CatchToLLMOptions {
+  /** Enables or disables the debug server. Defaults to true. */
+  enableServer?: boolean;
+  /** The port for the debug server to listen on. Defaults to 5001. */
+  serverPort?: number;
+}
+
+/**
  * @interface StackFrame
  * Represents a single frame in a stack trace.
  */
@@ -68,38 +79,3 @@ export interface AugmentedStackTrace {
     enclosingColumnNumber?: number | null;
   }[];
 }
-
-export interface CatchToLLMOptions {
-  /** Enables or disables the debug server. Defaults to true. */
-  enableServer?: boolean;
-  /** The port for the debug server to listen on. Defaults to 5001. */
-  serverPort?: number;
-}
-
-/**
- * Initializes the catch-to-llm library by overriding the default
- * `Error.prepareStackTrace` method. This modification allows the library
- * to capture and augment stack trace information.
- * 
- * This function should be called only once at the beginning of the
- * application lifecycle, preferably in a development environment.
- *
- * @param options Optional configuration options.
- *
- * @example
- * ```typescript
- * // Initialize the library with default options
- * initializeCatchToLLM();
- *
- * // Initialize the library with custom options
- * initializeCatchToLLM({ enableServer: false, serverPort: 5002 });
- *
- * try {
- *   // Code that might throw an error
- * } catch (error) {
- *   // Handle the error with enhanced stack trace information
- *   console.error(error);
- * }
- * ```
- */
-export declare const initializeCatchToLLM: (options?: CatchToLLMOptions) => void;

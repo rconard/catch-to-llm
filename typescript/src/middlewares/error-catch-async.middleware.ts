@@ -1,4 +1,4 @@
-import { contextualizeError } from "../../catch-to-llm";
+import { contextualizeError } from "../../catch-to-llm/dist";
 import { HttpError } from '../errors/http.error';
 
 export const errorCatchAsyncMiddleware = async function (req, res, next) {

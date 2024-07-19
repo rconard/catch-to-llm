@@ -7,7 +7,7 @@ import { renderToString } from 'react-dom/server';
 import { StaticRouter } from "react-router-dom/server";
 import { router as API } from './routes'; 
 import App from './webapp/App';
-import { initializeCatchToLLM } from '../catch-to-llm/initialize';
+import { initializeCatchToLLM } from '../catch-to-llm/dist/initialize';
 
 initializeCatchToLLM();
 

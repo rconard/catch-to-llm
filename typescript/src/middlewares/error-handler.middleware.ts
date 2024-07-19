@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpError } from '../errors/http.error';
-import { contextualizeError } from '../../catch-to-llm';
+import { contextualizeError } from '../../catch-to-llm/dist';
 
 // Define an error handling middleware function
 export const errorHandler = (

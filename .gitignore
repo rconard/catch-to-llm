@@ -8,6 +8,7 @@
 # TypeScript build output
 /typescript/dist/
 /typescript/public/
+/typescript/catch-to-llm/dist/
 
 # TypeScript cache
 /typescript/.tscache/

@@ -1,26 +1,22 @@
-// catch-to-llm/server/index.ts
-
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
 import { AugmentedStackTrace } from '../initialize.d';
-import { CodeContext } from '../index.d';
 import { contextualizeError as serverContextualizeError } from '../node';
 
 const app = express();
 const port = process.env.PORT || 5001;
 
 // Enable CORS for all origins (not recommended for production)
-app.use(cors()); 
+app.use(cors());
 
 // Parse JSON request bodies
-app.use(express.json()); 
+app.use(express.json());
 
-app.post('/contextualize', async (req: Request, res: Response) => {
+app.post('/contextualize', async (req, res) => {
   try {
     // Extract error data from request body
     const { errorData, options } = req.body;
-    
+
     // Validate incoming data
     if (!errorData) {
       return res.status(400).json({ error: 'Missing error data.' });
@@ -36,7 +32,7 @@ app.post('/contextualize', async (req: Request, res: Response) => {
     await serverContextualizeError(runtimeError, options);
 
     // Respond with success
-    res.json({ message: 'Contextualized error data saved.' }); 
+    res.json({ message: 'Contextualized error data saved.' });
   } catch (err) {
     console.error('Error processing request:', err);
     res.status(500).json({ error: 'Failed to contextualize error.' });
