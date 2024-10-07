@@ -9,7 +9,7 @@
 			"version": "lts",
 			"nvmVersion": "latest"
 		},
-		"ghcr.io/rocker-org/devcontainer-features/miniforge:1": {
+		"ghcr.io/rocker-org/devcontainer-features/miniforge:2": {
 			"version": "latest",
 			"variant": "Miniforge3"
 		}
